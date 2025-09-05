@@ -1,9 +1,10 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status,filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Book, Category, BorrowRecord, Review
 from .serializers import BookSerializer, CategorySerializer, BorrowRecordSerializer, ReviewSerializer
@@ -15,6 +16,10 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
+
+    filter_backends = [filters.SearchFilter, DjangoFilterBackend]
+    search_fields = ['title', 'author', 'isbn', 'category__name']
+    filterset_fields = ['category__name', 'available_copies']
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def borrow(self, request, pk=None):
