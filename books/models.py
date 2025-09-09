@@ -5,7 +5,8 @@ from datetime import timedelta
 
 User = settings.AUTH_USER_MODEL
 
-
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
 
 
 class Book(models.Model):
@@ -14,7 +15,7 @@ class Book(models.Model):
     isbn = models.CharField(max_length=20)
     description = models.TextField()
     copies = models.IntegerField()
-    category = models.CharField(max_length=100, unique=True)
+    categories = models.ManyToManyField(Category, related_name='books')
 
 
 def default_due_date():
@@ -29,15 +30,6 @@ class BorrowRecord(models.Model):
     returned = models.BooleanField(default=False)
     return_date = models.DateTimeField(null=True, blank=True)
     fine = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
-
-
-
-class Review(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    book = models.ForeignKey(Book, on_delete=models.CASCADE)
-    rating = models.IntegerField()
-    text = models.TextField(blank=True)
-
 
 
 class Waitlist(models.Model):

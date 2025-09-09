@@ -2,17 +2,12 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from books.permissions import IsLibrarianOrReadOnly
-from .models import BorrowRecord, Review, Book, Waitlist
-from .serializers import (
-    BookSerializer,
-    BorrowRecordSerializer,
-    ReviewSerializer,
-    WaitlistSerializer,
-)
+from .models import BorrowRecord, Book, Waitlist
+from .serializers import (BookSerializer, BorrowRecordSerializer, WaitlistSerializer)
+
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     permission_classes = [IsLibrarianOrReadOnly]
@@ -25,22 +20,28 @@ class BookViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def borrow(self, request, pk=None):
         book = self.get_object()
+        user = request.user
 
-        # Check availability
+
         if book.copies <= 0:
             return Response(
                 {"detail": "No copies available. You have been added to the waitlist."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-
+        if BorrowRecord.objects.filter(user=user, book=book, returned=False).exists():
+            return Response(
+                {"detail": "You have already borrowed this book."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        # Create borrow record
         borrow = BorrowRecord.objects.create(
-            user=request.user,
+            user=user,
             book=book,
             due_date=timezone.now() + timezone.timedelta(minutes=2)
         )
 
-
+        # Decrease available copies
         book.copies -= 1
         book.save()
 
@@ -64,18 +65,14 @@ class BookViewSet(viewsets.ModelViewSet):
 
         if borrow.return_date > borrow.due_date:
             delta = borrow.return_date - borrow.due_date
-            minutes_overdue = int(delta.total_seconds() / 60)
+            minutes_overdue = int(delta.total_seconds() / 8)
             borrow.fine = minutes_overdue * 10
         else:
             borrow.fine = 0
-
         borrow.save()
-
-
         book.copies += 1
         book.save()
 
-        # ✅ waitlist handle (give to next user for 2 minutes)
         next_user = Waitlist.objects.filter(book=book).order_by('created_at').first()
         if next_user:
             BorrowRecord.objects.create(
@@ -90,14 +87,23 @@ class BookViewSet(viewsets.ModelViewSet):
             "fine": str(borrow.fine)
         })
 
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def join_waitlist(self, request, pk=None):
+        book = self.get_object()
 
-class ReviewViewSet(viewsets.ModelViewSet):
-    queryset = Review.objects.all()
-    serializer_class = ReviewSerializer
-    permission_classes = [IsAuthenticated]
+        if book.copies > 0:
+            return Response({"detail": "Book is available, no need to join waitlist."}, status=400)
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        waitlist, created = Waitlist.objects.get_or_create(user=request.user, book=book)
+
+        if not created:
+            return Response({"detail": "Already in waitlist."}, status=400)
+
+        return Response(WaitlistSerializer(waitlist).data, status=201)
+
+
+
+
 
 
 

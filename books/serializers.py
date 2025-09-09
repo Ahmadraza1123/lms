@@ -1,10 +1,5 @@
 from rest_framework import serializers
-from .models import Book, BorrowRecord, Review, Waitlist
-
-
-
-from rest_framework import serializers
-from .models import Book
+from .models import Book, BorrowRecord, Waitlist
 
 class BookSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
@@ -17,12 +12,6 @@ class BookSerializer(serializers.ModelSerializer):
 class BorrowRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = BorrowRecord
-        fields = '__all__'
-
-
-class ReviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Review
         fields = '__all__'
 
 

@@ -11,8 +11,9 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class ReviewLikeSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(read_only=True)
+    user = serializers.CharField(source='user.username', read_only=True)
+    review_id = serializers.IntegerField(source='review.id', read_only=True)
 
     class Meta:
         model = ReviewLike
-        fields = ['id', 'user', 'review', 'is_like']
+        fields = ['id', 'user', 'review_id', 'vote_type']

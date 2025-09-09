@@ -16,9 +16,14 @@ class Review(models.Model):
 
 
 class ReviewLike(models.Model):
+    VOTE_CHOICES = (
+        ('like', 'Like'),
+        ('dislike', 'Dislike'),
+    )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="likes")
-    is_like = models.BooleanField(default=True)
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="like")
+    vote_type = models.CharField(max_length=10, choices=VOTE_CHOICES)
 
     class Meta:
         unique_together = ('user', 'review')
