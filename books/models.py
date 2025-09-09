@@ -5,29 +5,20 @@ from datetime import timedelta
 
 User = settings.AUTH_USER_MODEL
 
-class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True)
 
 
 
 class Book(models.Model):
     title = models.CharField(max_length=200)
     author = models.CharField(max_length=200)
-    isbn = models.CharField(max_length=20, unique=True)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
-    description = models.TextField(max_length=500, null=True, blank=True)
-    copies = models.PositiveIntegerField(default=1)
-    available_copies = models.PositiveIntegerField(default=1)
+    isbn = models.CharField(max_length=20)
+    description = models.TextField()
+    copies = models.IntegerField()
+    category = models.CharField(max_length=100, unique=True)
 
-    def save(self, *args, **kwargs):
-        if self.available_copies > self.copies:
-            self.available_copies = self.copies
-        super().save(*args, **kwargs)
 
-    def __str__(self):
-        return f"{self.title} ({self.available_copies}/{self.copies})"
 def default_due_date():
-    return timezone.now() + timedelta(days=14)
+    return timezone.now() + timedelta(minutes=2)
 
 
 class BorrowRecord(models.Model):
@@ -36,9 +27,23 @@ class BorrowRecord(models.Model):
     borrow_date = models.DateTimeField(auto_now_add=True)
     due_date = models.DateTimeField(default=default_due_date)
     returned = models.BooleanField(default=False)
+    return_date = models.DateTimeField(null=True, blank=True)
+    fine = models.DecimalField(max_digits=6, decimal_places=2, default=0.00)
+
+
 
 class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     rating = models.IntegerField()
     text = models.TextField(blank=True)
+
+
+
+class Waitlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'book')

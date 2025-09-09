@@ -23,6 +23,6 @@ urlpatterns = [
     # apps routes
     path('users/', include('users.urls')),
     path('books/', include('books.urls')),
-    path('borrow/', include('borrow.urls')),
+    # path('borrow/', include('borrow.urls')),
     path('reviews/', include('reviews.urls')),
 ]

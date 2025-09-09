@@ -47,11 +47,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_filters',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt',
     'users',
     'books',
     'borrow',
     'reviews',
+
 ]
 AUTH_USER_MODEL = 'users.User'
 

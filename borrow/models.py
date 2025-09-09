@@ -30,7 +30,7 @@ class Borrow(models.Model):
         if self.return_date > self.due_date:
             self.status = 'late'
             days_overdue = (self.return_date - self.due_date).days
-            self.fine = days_overdue * 10  # replace with settings.FINE_RATE if needed
+            self.fine = days_overdue * 10
         else:
             self.status = 'returned'
         self.book.available_copies += 1

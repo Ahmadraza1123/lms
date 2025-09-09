@@ -1,24 +1,35 @@
 from rest_framework import serializers
-from .models import Book, Category, BorrowRecord, Review
+from .models import Book, BorrowRecord, Review, Waitlist
 
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = '__all__'
+
+
+from rest_framework import serializers
+from .models import Book
 
 class BookSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.name', read_only=True)
+
     class Meta:
         model = Book
-        fields = '__all__'
+        fields = ['id', 'title', 'author', 'isbn', 'description', 'copies', 'category_name']
+
 
 class BorrowRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = BorrowRecord
         fields = '__all__'
-        read_only_fields = ['user', 'borrow_date']
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = '__all__'
-        read_only_fields = ['user']
+
+
+class WaitlistSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source='user.username', read_only=True)
+    book_title = serializers.CharField(source='book.title', read_only=True)
+
+    class Meta:
+        model = Waitlist
+        fields = ['id', 'created_at', 'user', 'user_name', 'book', 'book_title']

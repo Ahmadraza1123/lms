@@ -1,15 +1,16 @@
 from rest_framework import generics, permissions
-from .serializers import RegisterSerializer, UserSerializer
+from .serializers import RegisterSerializer, CustomTokenObtainPairSerializer
 from django.contrib.auth import get_user_model
-from users.permissions import IsAdmin
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 User = get_user_model()
+
+# Registration
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
 
-class UserListView(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAdmin]
+# JWT login (custom)
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
