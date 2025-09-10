@@ -8,10 +8,17 @@ User = settings.AUTH_USER_MODEL
 class Book(models.Model):
     title = models.CharField(max_length=200)
     author = models.CharField(max_length=200)
-    isbn = models.CharField(max_length=20)
+    isbn = models.CharField(max_length=20, unique=True)
     description = models.TextField()
     copies = models.IntegerField()
     categories = models.JSONField(default=list)
+
+
+    def average_rating(self):
+        reviews = self.reviews.all()
+        if reviews.exists():
+            return round(sum(r.rating for r in reviews) / reviews.count(), 2)
+        return 0
 
 
 def default_due_date():

@@ -3,9 +3,14 @@ from .models import Book, BorrowRecord, Waitlist
 
 
 class BookSerializer(serializers.ModelSerializer):
+    average_rating = serializers.SerializerMethodField()
     class Meta:
         model = Book
-        fields = ['id', 'title', 'author', 'isbn', 'description', 'copies', 'categories']
+        fields = ['id', 'title', 'author', 'isbn', 'description', 'copies', 'categories','average_rating']
+
+    def get_average_rating(self, obj):
+        return obj.average_rating()
+
 
 class BorrowRecordSerializer(serializers.ModelSerializer):
     class Meta:
