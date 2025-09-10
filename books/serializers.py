@@ -1,13 +1,11 @@
 from rest_framework import serializers
 from .models import Book, BorrowRecord, Waitlist
 
-class BookSerializer(serializers.ModelSerializer):
-    category_name = serializers.CharField(source='category.name', read_only=True)
 
+class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
-        fields = ['id', 'title', 'author', 'isbn', 'description', 'copies', 'category_name']
-
+        fields = ['id', 'title', 'author', 'isbn', 'description', 'copies', 'categories']
 
 class BorrowRecordSerializer(serializers.ModelSerializer):
     class Meta:

@@ -21,7 +21,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
         if not BorrowRecord.objects.filter(user=user, book=book).exists():
             raise ValidationError({"detail": "You must borrow this book before reviewing."})
 
-
         if Review.objects.filter(user=user, book=book).exists():
             raise ValidationError({"detail": "You have already reviewed this book."})
 
@@ -33,7 +32,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         like_instance, _ = ReviewLike.objects.update_or_create(
             user=request.user,
             review=review,
-            defaults={'vote': 'like'}
+            defaults={'vote_type': 'like'}
         )
         serializer = ReviewLikeSerializer(like_instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -44,7 +43,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         like_instance, _ = ReviewLike.objects.update_or_create(
             user=request.user,
             review=review,
-            defaults={'vote': 'dislike'}
+            defaults={'vote_type': 'dislike'}
         )
         serializer = ReviewLikeSerializer(like_instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -55,20 +54,6 @@ class ReviewLikeViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewLikeSerializer
     permission_classes = [IsAuthenticated]
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
-    def like(self, request, pk=None):
-        review = self.get_object()
-        user = request.user
-        vote_type = request.data.get('vote')  # 'like' or 'dislike'
+    def get_queryset(self):
 
-        if vote_type not in ['like', 'dislike']:
-            return Response({'detail': 'Invalid vote type'}, status=status.HTTP_400_BAD_REQUEST)
-
-        obj, created = ReviewLike.objects.update_or_create(
-            user=user,
-            review=review,
-            defaults={'vote_type': vote_type}
-        )
-
-        serializer = ReviewLikeSerializer(obj)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return ReviewLike.objects.filter(user=self.request.user)

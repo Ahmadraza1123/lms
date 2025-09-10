@@ -22,7 +22,7 @@ class ReviewLike(models.Model):
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="like")
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name="likes")
     vote_type = models.CharField(max_length=10, choices=VOTE_CHOICES)
 
     class Meta:

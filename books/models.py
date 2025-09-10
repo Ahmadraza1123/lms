@@ -5,17 +5,13 @@ from datetime import timedelta
 
 User = settings.AUTH_USER_MODEL
 
-class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-
-
 class Book(models.Model):
     title = models.CharField(max_length=200)
     author = models.CharField(max_length=200)
     isbn = models.CharField(max_length=20)
     description = models.TextField()
     copies = models.IntegerField()
-    categories = models.ManyToManyField(Category, related_name='books')
+    categories = models.JSONField(default=list)
 
 
 def default_due_date():

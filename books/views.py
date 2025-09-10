@@ -14,8 +14,8 @@ class BookViewSet(viewsets.ModelViewSet):
     serializer_class = BookSerializer
 
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
-    search_fields = ['title', 'author', 'isbn', 'category']
-    filterset_fields = ['category']
+    search_fields = ['title', 'author', 'isbn',]
+
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def borrow(self, request, pk=None):
@@ -28,20 +28,11 @@ class BookViewSet(viewsets.ModelViewSet):
                 {"detail": "No copies available. You have been added to the waitlist."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        if BorrowRecord.objects.filter(user=user, book=book, returned=False).exists():
-            return Response(
-                {"detail": "You have already borrowed this book."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        # Create borrow record
         borrow = BorrowRecord.objects.create(
             user=user,
             book=book,
             due_date=timezone.now() + timezone.timedelta(minutes=2)
         )
-
-        # Decrease available copies
         book.copies -= 1
         book.save()
 
